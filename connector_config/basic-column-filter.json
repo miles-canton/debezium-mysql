@@ -1,0 +1,32 @@
+{
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector", 
+    "tasks.max": "1", 
+    "database.hostname": "10.83.190.42", 
+    "database.port": "3306", 
+    "database.user": "root", 
+    "database.password": "root", 
+    "database.server.id": "10005", 
+    "database.server.name": "mysql-basic-filter-column", 
+    "database.history.kafka.bootstrap.servers": "kafka:9092", 
+    "database.history.kafka.topic": "dbhistory.mysql-basic-filter-column",
+
+    "table.include.list": "inventory.addresses,inventory.customers",
+    "column.include.list": "inventory.customers.first_name,inventory.customers.last_name",
+
+    "snapshot.mode": "when_needed",
+    "event.deserialization.failure.handling.mode": "warn",
+    "inconsistent.schema.handling.mode": "warn",
+    "event.processing.failure.handling.mode": "warn",
+    "include.query": "true",
+    "provide.transaction.metadata": "true", 
+    "tombstones.on.delete": "true",
+    "key.converter": "io.apicurio.registry.utils.converter.ExtJsonConverter",
+    "key.converter.apicurio.registry.url": "http://apicurio:8082/apis/registry/v2",
+    "key.converter.apicurio.registry.auto-register": "true",
+    "key.converter.apicurio.registry.find-latest": "true",
+    "value.converter": "io.apicurio.registry.utils.converter.ExtJsonConverter",
+    "value.converter.apicurio.registry.url": "http://apicurio:8082/apis/registry/v2",
+    "value.converter.apicurio.registry.auto-register": "true",
+    "value.converter.apicurio.registry.find-latest": "true"
+
+}

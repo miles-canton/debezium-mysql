@@ -1,0 +1,46 @@
+{
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector", 
+    "tasks.max": "1", 
+    "database.hostname": "10.83.190.42", 
+    "database.port": "3306", 
+    "database.user": "root", 
+    "database.password": "root", 
+    "database.server.id": "30008", 
+    "database.server.name": "unwarp_reroute_avro", 
+    "database.history.kafka.bootstrap.servers": "kafka:9092", 
+    "database.history.kafka.topic": "dbhistory.unwarp_reroute_avro",
+
+    "table.include.list": "inventory.addresses,inventory.customers",
+
+    "provide.transaction.metadata": true, 
+    "snapshot.mode": "when_needed",
+    "event.deserialization.failure.handling.mode": "warn",
+    "inconsistent.schema.handling.mode": "warn",
+    "event.processing.failure.handling.mode": "warn",
+    "include.query": "true",
+
+    "transforms": "Reroute,unwrap",
+
+    "transforms.Reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
+    "transforms.Reroute.topic.regex": "(.*)(?=add|cust)(.*)",
+    "transforms.Reroute.topic.replacement": "$1add_cust",
+
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.unwrap.delete.handling.mode" :"rewrite",
+    "transforms.unwrap.add.fields.prefix": "__",
+    "transforms.unwrap.add.fields": "db:DATABASE,table,op,source.ts_ms,query:DDL,version,gtid,transaction.total_order,transaction.data_collection_order",
+    "transforms.unwrap.add.headers.prefix": "__",
+    "transforms.unwrap.add.headers": "db,table,op",
+
+    "key.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+    "key.converter.apicurio.registry.url": "http://apicurio:8080/apis/registry/v2",
+    "key.converter.apicurio.registry.auto-register": "true",
+    "key.converter.apicurio.registry.find-latest": "true",
+
+    "value.converter": "io.apicurio.registry.utils.converter.AvroConverter",
+    "value.converter.apicurio.registry.url": "http://apicurio:8080/apis/registry/v2",
+    "value.converter.apicurio.registry.auto-register": "true",
+    "value.converter.apicurio.registry.find-latest": "true"
+
+}

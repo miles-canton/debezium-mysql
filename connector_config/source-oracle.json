@@ -1,0 +1,32 @@
+{
+    "connector.class" : "io.debezium.connector.oracle.OracleConnector",
+    "tasks.max" : "1",
+    "database.server.name" : "oracle",
+    "database.hostname" : "10.0.2.4",
+    "database.port" : "1521",
+    "database.user" : "dbzuser",
+    "database.password" : "dbz",
+    "database.dbname" : "xe",
+    "schema.include.list":"debezium",
+    "database.connection.adapter" : "logminer",
+    "database.history.kafka.bootstrap.servers" : "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.inventory",
+    "event.deserialization.failure.handling.mode": "warn",
+    "inconsistent.schema.handling.mode": "warn",
+    "event.processing.failure.handling.mode": "warn",
+    "include.query": "true",
+    "provide.transaction.metadata": "true", 
+
+    "time.precision.mode": "connect",
+
+    "transforms": "reroute",
+
+    "transforms.reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
+    "transforms.reroute.topic.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.reroute.topic.replacement": "$3",
+
+    "transforms.reroute.key.enforce.uniqueness":"true",
+    "transforms.reroute.key.field.name":"__PKtableowner",
+    "transforms.reroute.key.field.regex":"([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.reroute.key.field.replacement":"$1"
+  }

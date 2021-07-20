@@ -1,0 +1,165 @@
+version: '3.9'
+services:
+  zookeeper:
+    image: debezium/zookeeper:${DEBEZIUM_VERSION}
+    ports:
+     - 2181:2181
+     - 2888:2888
+     - 3888:3888
+  kafka:
+    image: debezium/kafka:${DEBEZIUM_VERSION}
+    ports:
+     - 9092:9092
+    links:
+     - zookeeper
+    environment:
+     - ZOOKEEPER_CONNECT=zookeeper:2181
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    ports:
+      - 9000:9000
+    links:
+      - kafka
+    environment:
+      - kafka.brokerConnect=kafka:9092
+      - schemaregistry_connect=http://10.83.190.42:8082/apis/ccompat/v6
+  mysql:
+    image: debezium/example-mysql:${DEBEZIUM_VERSION}
+    ports:
+     - 3306:3306
+    environment:
+     - MYSQL_ROOT_PASSWORD=debezium
+     - MYSQL_USER=mysqluser
+     - MYSQL_PASSWORD=mysqlpw
+    volumes: 
+    - ./config/master.cnf:/etc/mysql/conf.d/mysql.cnf
+  apicurio:
+    image: apicurio/apicurio-registry-mem:2.0.0.Final
+    ports:
+     - 8082:8080
+  mysql1:
+    image: debezium/example-mysql:${DEBEZIUM_VERSION}
+    ports:
+      - 13306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=debezium
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=mysqlpw
+    volumes: 
+    - ./config/master.cnf:/etc/mysql/conf.d/mysql.cnf
+  postgres:
+    image: debezium/postgres:9.6
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=postgrespw
+      - POSTGRES_DB=inventory
+
+  connect:
+    image: debezium/connect-jdbc-jmx-oracle:${DEBEZIUM_VERSION}
+    # build:
+    #   context: debezium-jmx-jdbc-oracle
+    #   args:
+    #     DEBEZIUM_VERSION: ${DEBEZIUM_VERSION}
+    #     JMX_AGENT_VERSION: 0.15.0
+    ports:
+     - 8083:8083
+     - 1976:1976
+     - 5005:5005
+    links:
+     - kafka
+     - mysql
+     - mysql1
+     - apicurio
+     - postgres
+    environment:
+     - BOOTSTRAP_SERVERS=kafka:9092
+     - TZ=Asia/Shanghai  
+     - GROUP_ID=1
+     - CONFIG_STORAGE_TOPIC=my_connect_configs
+     - OFFSET_STORAGE_TOPIC=my_connect_offsets
+     - STATUS_STORAGE_TOPIC=my_connect_statuses
+     - ENABLE_APICURIO_CONVERTERS=true
+     - KAFKA_OPTS=-javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml
+     - JMXHOST=localhost
+     - JMXPORT=1976
+     - LD_LIBRARY_PATH=/instant_client
+     - KAFKA_DEBUG=true
+     - DEBUG_SUSPEND_FLAG=n
+     - JAVA_DEBUG_PORT=0.0.0.0:5005
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8192M
+        reservations:
+          cpus: '0.25'
+          memory: 200M
+      # mode: replicated
+      # replicas: 2
+      # placement:
+      #   max_replicas_per_node: 1
+  connect1:
+    image: debezium/connect-jdbc-jmx-oracle:${DEBEZIUM_VERSION}
+    ports:
+      - 8084:8083
+      - 1977:1976
+    links:
+      - kafka
+      - mysql
+      - mysql1
+      - apicurio
+      - postgres
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - TZ=Asia/Shanghai  
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      - ENABLE_APICURIO_CONVERTERS=true
+      - KAFKA_OPTS=-javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml
+      - JMXHOST=localhost
+      - JMXPORT=1976
+  debezium-ui:
+    container_name: debezium-ui
+    image: debezium/debezium-ui:${DEBEZIUM_VERSION}
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CONNECT_URI=http://connect:8083
+  prometheus:
+    build:
+      context: debezium-prometheus
+      args:
+        PROMETHEUS_VERSION: v2.26.0
+    ports:
+      - 9090:9090
+    links:
+      - connect
+  grafana:
+    build:
+      context: debezium-grafana
+      args:
+        GRAFANA_VERSION: 7.5.5
+    ports:
+      - 3000:3000
+    links:
+      - prometheus
+    environment:
+      - DS_PROMETHEUS=prometheus
+  oracle:
+    image: truevoly/oracle-12c 
+    ports:
+      - "1521:1521"
+
+    
+
+
+
+
+
+
+
+      

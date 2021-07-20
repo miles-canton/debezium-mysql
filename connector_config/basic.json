@@ -1,0 +1,21 @@
+{
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector", 
+    "tasks.max": "1", 
+    "database.hostname": "10.83.190.42", 
+    "database.port": "3306", 
+    "database.user": "root", 
+    "database.password": "debezium", 
+    "database.server.id": "10000", 
+    "database.server.name": "mysql-basic", 
+    "database.history.kafka.bootstrap.servers": "kafka:9092", 
+    "database.history.kafka.topic": "dbhistory.mysql-basic",
+    "snapshot.mode": "when_needed",
+    "event.deserialization.failure.handling.mode": "warn",
+    "inconsistent.schema.handling.mode": "warn",
+    "event.processing.failure.handling.mode": "warn",
+    "include.query": "true",
+    "provide.transaction.metadata": "true", 
+    "tombstones.on.delete": "true"
+
+
+}
